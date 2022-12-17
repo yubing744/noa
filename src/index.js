@@ -95,6 +95,7 @@ export class Engine extends EventEmitter {
      *    stickyFullscreen: false,
      *    skipDefaultHighlighting: false,
      *    originRebaseDistance: 25,
+     *    supportsVR: false,
      * }
      * ```
     */

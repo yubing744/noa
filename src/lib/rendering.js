@@ -10,14 +10,15 @@ import { SceneOctreeManager } from './sceneOctreeManager'
 
 import { Scene } from '@babylonjs/core/scene'
 import { FreeCamera } from '@babylonjs/core/Cameras/freeCamera'
+import { WebVRFreeCamera } from '@babylonjs/core/Cameras/VR/webVRCamera'
 import { Engine } from '@babylonjs/core/Engines/engine'
 import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight'
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial'
 import { Color3 } from '@babylonjs/core/Maths/math.color'
 import { Vector3 } from '@babylonjs/core/Maths/math.vector'
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode'
-import { CreateLines } from '@babylonjs/core/Meshes/Builders/linesBuilder'
-import { CreatePlane } from '@babylonjs/core/Meshes/Builders/planeBuilder'
+import { LinesBuilder } from '@babylonjs/core/Meshes/Builders/linesBuilder'
+import { PlaneBuilder } from '@babylonjs/core/Meshes/Builders/planeBuilder'
 
 
 
@@ -124,13 +125,19 @@ function initScene(self, canvas, opts) {
 
     // camera, and a node to hold it and accumulate rotations
     self._cameraHolder = new TransformNode('camHolder', scene)
-    self._camera = new FreeCamera('camera', new Vector3(0, 0, 0), scene)
+
+    if (opts.supportsVR) {
+        self._camera = new WebVRFreeCamera("camera1", new Vector3(0, 0, 0), scene)
+    } else {
+        self._camera = new FreeCamera('camera', new Vector3(0, 0, 0), scene)
+    }
+    
     self._camera.parent = self._cameraHolder
     self._camera.minZ = .01
     self._cameraHolder.visibility = false
 
     // plane obscuring the camera - for overlaying an effect on the whole view
-    self._camScreen = CreatePlane('camScreen', { size: 10 }, scene)
+    self._camScreen = PlaneBuilder.CreatePlane('camScreen', { size: 10 }, scene)
     self.addMeshToScene(self._camScreen)
     self._camScreen.position.z = .1
     self._camScreen.parent = self._camera
@@ -410,7 +417,7 @@ function checkCameraEffect(self, id) {
 function getHighlightMesh(rendering) {
     var mesh = rendering._highlightMesh
     if (!mesh) {
-        mesh = CreatePlane("highlight", { size: 1.0 }, rendering._scene)
+        mesh = PlaneBuilder.CreatePlane("highlight", { size: 1.0 }, rendering._scene)
         var hlm = rendering.makeStandardMaterial('highlightMat')
         hlm.backFaceCulling = false
         hlm.emissiveColor = new Color3(1, 1, 1)
@@ -419,7 +426,7 @@ function getHighlightMesh(rendering) {
 
         // outline
         var s = 0.5
-        var lines = CreateLines("hightlightLines", {
+        var lines = LinesBuilder.CreateLines("hightlightLines", {
             points: [
                 new Vector3(s, s, 0),
                 new Vector3(s, -s, 0),
